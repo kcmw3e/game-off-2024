@@ -1,0 +1,11 @@
+# Editors
+.vscode
+.helix
+
+# Random directories that might be created
+tmp/
+sandbox/
+playground/
+
+# Rust ignores
+target/
