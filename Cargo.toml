@@ -1,0 +1,21 @@
+[package]
+name = "game-off-2024"
+authors = ["Casey Walker", "Nico Murolo"]
+version = "0.0.0"
+edition = "2021"
+description = "A game made for the Game Off 2024 game jam."
+readme = "readme"
+repository = "https://github.com/kcmw3e/game-off-2024"
+
+[dependencies]
+bevy = { version = "0.14.2" }
+
+# Enable some optimization in the `dev` profile to speed up the game during
+# development without sacrificing too much debug-ability.
+[profile.dev]
+opt-level = 1
+
+# Enable a lot more optimization in the `dev` profile for dependencies since
+# they can be assumed to work correctly.
+[profile.dev.package."*"]
+opt-level = 3
