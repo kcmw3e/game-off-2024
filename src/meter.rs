@@ -38,6 +38,40 @@
 //!         .run();
 //! }
 //! ```
+//!
+//! Here's an example of how to create a time-based fire damage:
+//!
+//! ```rust
+//! use bevy::prelude::*;
+//!
+//! mod meter;
+//! use crate::meter::{Meter, MeterEffect, MeterEffectMarker, MeterMarker};
+//!
+//! struct HealthMarker {}
+//! impl MeterMarker for HealthMarker {
+//!     type Field = i64;
+//! }
+//!
+//! struct FireDamageMarker {}
+//! impl MeterEffectMarker for FireDamageMarker {
+//!     type Marker = HealthMarker;
+//! }
+//!
+//! type HealthMeter = Meter<HealthMarker>;
+//! type FireDamage = MeterEffect<FireDamageMarker>;
+//!
+//! fn setup_player(mut commands: Commands) {
+//!     commands.spawn((HealthMeter::new_from_max(100), FireDamage::new(-5)));
+//! }
+//!
+//! fn main() {
+//!     App::new()
+//!         .insert_resource(Time::<Fixed>::from_seconds(1.0))
+//!         .add_systems(Startup, setup_player)
+//!         .add_systems(FixedUpdate, FireDamage::apply_effect)
+//!         .run();
+//! }
+//! ```
 use std::marker::PhantomData;
 
 use bevy::ecs::query::QueryData;
