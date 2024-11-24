@@ -41,6 +41,7 @@
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use num_traits::NumAssignOps;
 
 /// A [`Meter`] represents some form of expendable resource for an entity. The
 /// typical example of a meter is health and mana. In order to make [`Meter`]s
@@ -71,7 +72,7 @@ impl<T: MeterMarker> Meter<T> {
 
 /// A [`MeterMarker`] can be used to create new, unique [`Meter`]s, each of
 /// which can be used in Bevy as its own component.
-pub trait MeterMarker: {
+pub trait MeterMarker: Send + Sync {
     /// The type of the meter's fields, typically [`i64`] or [`i32`].
-    type Field: Copy;
+    type Field: Copy + Send + Sync + NumAssignOps;
 }
