@@ -40,6 +40,7 @@
 //! ```
 use std::marker::PhantomData;
 
+use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use num_traits::NumAssignOps;
 
@@ -58,6 +59,33 @@ pub struct Meter<T: MeterMarker> {
     _marker: PhantomData<T>,
 }
 
+/// A [`MeterEffect`] represents some type of value change on a meter's
+/// `current` field. This can be used to represent things like one-time hits or
+/// some mana usage from casing a spell, or perhaps debuffs.
+#[derive(Component)]
+pub struct MeterEffect<T: MeterEffectMarker> {
+    /// The amount by which the meter should be changed (may be posititve or
+    /// negative).
+    amount: <T::Marker as MeterMarker>::Field,
+    _marker: PhantomData<T>,
+}
+
+/// This custom query is used for querying an entity which has a meter and some
+/// active effect.
+///
+/// It seems to be necessary to use this custom query instead of the typical way
+/// of writing Bevy systems due to an issue with the way Rust interprets the
+/// generic types during the definition (where an error specifying that the
+/// `QueryData` trait is not satisfied.
+#[derive(QueryData)]
+#[query_data[mutable]]
+pub struct MeterEffectQuery<T: MeterEffectMarker + 'static> {
+    /// The meter that should be altered by the effect.
+    meter: &'static mut Meter<T::Marker>,
+    /// The effect that alters the meter.
+    effect: &'static mut MeterEffect<T>,
+}
+
 impl<T: MeterMarker> Meter<T> {
     /// Create a new [`Self`] with its current amount initialized to its
     /// maximum.
@@ -70,9 +98,36 @@ impl<T: MeterMarker> Meter<T> {
     }
 }
 
+impl<T: MeterEffectMarker> MeterEffect<T> {
+    /// Create a new [`Self`] given an amount by which to change the associated
+    /// meter.
+    pub fn new(amount: <T::Marker as MeterMarker>::Field) -> Self {
+        return Self {
+            amount: amount,
+            _marker: PhantomData,
+        };
+    }
+
+    /// The Bevy system used to apply a meter effect. Note that the effect will
+    /// be neither removed nor timed.
+    pub fn apply_effect(mut query: Query<MeterEffectQuery<T>>) {
+        for MeterEffectQueryItem { mut meter, effect } in query.iter_mut() {
+            meter.current += effect.amount;
+        }
+    }
+}
+
 /// A [`MeterMarker`] can be used to create new, unique [`Meter`]s, each of
 /// which can be used in Bevy as its own component.
 pub trait MeterMarker: Send + Sync {
     /// The type of the meter's fields, typically [`i64`] or [`i32`].
     type Field: Copy + Send + Sync + NumAssignOps;
+}
+
+/// A [`MeterEffectMarker`] can be used to create new, unique [`MeterEffect`]s,
+/// each of which can be used in Bevy as its own component.
+pub trait MeterEffectMarker: Send + Sync {
+    /// The type of the meter effect's meter marker (which will be used to
+    /// define/query for the corresponding meter component).
+    type Marker: MeterMarker;
 }
