@@ -1791,6 +1791,7 @@ name = "game-off-2024"
 version = "0.0.0"
 dependencies = [
  "bevy",
+ "num-traits",
 ]
 
 [[package]]

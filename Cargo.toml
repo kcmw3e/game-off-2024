@@ -9,6 +9,7 @@ repository = "https://github.com/kcmw3e/game-off-2024"
 
 [dependencies]
 bevy = { version = "0.14.2" }
+num-traits = "0.2.19"
 
 # Enable some optimization in the `dev` profile to speed up the game during
 # development without sacrificing too much debug-ability.
